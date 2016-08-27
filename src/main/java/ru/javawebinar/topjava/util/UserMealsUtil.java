@@ -6,6 +6,7 @@ import ru.javawebinar.topjava.model.UserMealWithExceed;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,7 +30,43 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExceed>  getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        // TODO return filtered list with correctly exceeded field
-        return null;
+        List<UserMealWithExceed> listResult = new ArrayList<>();
+        List<UserMeal> userMealList = new ArrayList<>();
+        int dayOfMonth = mealList.get(0).getDateTime().getDayOfMonth();
+        int caloriesSum = 0;
+        int count = 0;
+
+        for(UserMeal userMeal : mealList)
+        {
+            count++;
+            if(dayOfMonth != userMeal.getDateTime().getDayOfMonth() || count == mealList.size())
+            {
+                if(count == mealList.size())
+                {
+                    userMealList.add(userMeal);
+                    caloriesSum += userMeal.getCalories();
+                }
+                dayOfMonth = userMeal.getDateTime().getDayOfMonth();
+
+                if(caloriesSum > caloriesPerDay)
+                {
+                    for(UserMeal userMeal1 : userMealList)
+                    {
+                        LocalTime localTime = userMeal1.getDateTime().toLocalTime();
+                        if(localTime.isAfter(startTime) && localTime.isBefore(endTime))
+                        {
+                            listResult.add(new UserMealWithExceed(userMeal1.getDateTime(), userMeal1.getDescription(), userMeal1.getCalories(), true));
+                        }
+                    }
+                }
+                userMealList.clear();
+                caloriesSum = 0;
+            }
+            userMealList.add(userMeal);
+            caloriesSum += userMeal.getCalories();
+        }
+        // TODO return filtered listResult with correctly exceeded field
+
+        return listResult;
     }
 }
